@@ -224,9 +224,10 @@ while main_loop:
         request_lock.acquire()
         if len(request_list) > 0:
             send_to_server(request_list)
+            request_list.clear()
         request_lock.release()
         #Ждём сообщения от сервера
-        server_input, sender = udp_socket_receive.recv(INPUT_BUFFER)
+        server_input, sender = udp_socket_receive.recvfrom(INPUT_BUFFER)
         main_log.write('Получена датаграмма:', server_input)
         
         if not main_loop:
@@ -305,8 +306,8 @@ while main_loop:
         pass
     except socket.error as ex:
         pass
-    except Exception as ex:
-        main_log.write('CE')
+    except BaseException as ex:
+        main_log.write(ex)
 
     if not data_received:
         main_log.write('Запрос регистрации')

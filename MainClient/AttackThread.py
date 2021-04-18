@@ -76,7 +76,7 @@ class AttackThread(BasicNetworkThread):
             generator = NumberGenerator()
             self.generators[target_ip] = generator
 
-        while True:
+        while not self.stoped:
             num = generator.get_number()
             self.wlog('Отправка числа:', num)
             
