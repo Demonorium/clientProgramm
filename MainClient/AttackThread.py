@@ -47,7 +47,7 @@ class AttackThread(BasicNetworkThread):
         
         #Работа в многопоточном режиме не даёт использовать math.random (риск ошибок)
         self.rnd = random.Random()
-
+        self.rnd.seed(round(1000* time.time()))
 
     def loop_action(self):
         if self.socket == None:
@@ -94,6 +94,7 @@ class AttackThread(BasicNetworkThread):
                     self.request_send(Protocol.ServerRequests.KILL, 
                                  int(ip[0]), int(ip[1]), int(ip[2]), int(ip[3]))
                 self.remove_player(target_ip)
+                break;
             elif RawData.check(data, RawData.GREATER_DATA):
                 generator.tip(NumberGenerator.GREATER)
             elif RawData.check(data, RawData.LESS_DATA):

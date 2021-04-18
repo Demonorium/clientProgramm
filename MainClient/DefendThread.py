@@ -1,9 +1,13 @@
 import socket
 import random
 
+import time
 from BasicNetworkThread import BasicNetworkThread
 import Protocol
 import RawData
+
+
+
 
 class DefendThread(BasicNetworkThread):
     '''Поток, который умеет загадывать число и убивает программу при получении числа'''
@@ -23,8 +27,9 @@ class DefendThread(BasicNetworkThread):
         self.socket.listen(1)
         #Работа в многопоточном режиме не даёт использовать math.random (риск ошибок)
         self.rnd = random.Random()
+        self.rnd.seed(round(1000* time.time()))
 
-        self.death_number = self.rnd.randint(Protocol.MAX_NUMBER, Protocol.MAX_NUMBER)
+        self.death_number = self.rnd.randint(Protocol.MIN_NUMBER, Protocol.MAX_NUMBER)
         self.wlog('Загадано число:', self.death_number)
 
         self.connection = None

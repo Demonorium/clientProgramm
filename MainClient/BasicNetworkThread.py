@@ -61,14 +61,15 @@ class BasicNetworkThread(Thread):
         self.stoped = True
 
     def finalize(self):
-        self.socket.close()
+        if self.socket != None:
+            self.socket.close()
         
     def run(self):
         self.stoped = False
         try:
             self.init_action()
         except Exception as ex:
-            self.critical_error(ex)
+            self.critical_error_action(ex)
 
         while not self.stoped:
             try:

@@ -194,7 +194,8 @@ def init_threads():
             timeout = ENEMY_INPUT_TIMEOUT,
             request_send=request_send,
             force_send=send_to_server,
-            death_checker=death_checker
+            death_checker=death_checker,
+            kill_everything=kill_everything
             )
     
 
