@@ -30,7 +30,6 @@ ENEMY_INPUT_TIMEOUT  = Protocol.SEND_DELAY*2 + 0.25
 TABLE_UPDATE_DELAY = 2.0
 
 
-
 #Создание сокетов для работы с главным сервером
 udp_socket_send = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_socket_receive = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -75,6 +74,8 @@ main_log    = Log(MAIN_SERVER_LOG_FILE)
 output_log  = Log(OUTPUT_LOG)
 input_log   = Log(INPUT_LOG)
 
+#Главный цикл
+main_loop = True;
 #Вспомогательные процедуры
 from DefendThread import DefendThread
 from AttackThread import AttackThread
@@ -142,6 +143,21 @@ def death_checker(ip):
         player_list_lock.release()
 
     return False
+
+
+def kill_everything():
+    '''Убивает все потоки'''
+    global attacker, defender, main_loop
+    if (attacker != None) and not attacker.stoped:
+        attacker.stop();
+    if (defender != None) and not defender.stoped:
+        defender.stop();
+    main_loop = False
+
+def thread_inited():
+    global attacker, defender
+    return ((attacker != None) and not attacker.stoped) and ((defender != None) and not defender.stoped)
+
 def init_threads():
     '''Создаёт атакующий и защищающийся поток, как объекты'''
     global attacker, defender
@@ -191,11 +207,8 @@ main_log.write('Запрос регистрации')
 
 send_to_server_raw(REGISTER_REQUEST)
 
-while True:
+while main_loop:
     try:
-        #if (attacker == None) or attacker.stoped: 
-        #    game_started = False
-
         if game_started:
             #Обновления меток времени
             current_time = time.time()
@@ -214,12 +227,9 @@ while True:
         #Ждём сообщения от сервера
         server_input, sender = udp_socket_receive.recvfrom(INPUT_BUFFER)
         main_log.write('Получена датаграмма:', server_input)
-
-        #Проверяем, что запрос прилетел от сервера
-        #if (sender[0] != SERVER_IP):
-        #    main_log.write('Датаграмма из неизвестного источника:', sender)
-        #    continue;
         
+        if not main_loop:
+            exit(0)
         #Помечаем, что мы получили данные от сервера
         if not data_received:
             data_received = True
@@ -228,7 +238,7 @@ while True:
             if is_ready():
                 main_log.write('Игра началась')
 
-                if (attacker == None) or (defender == None):
+                if not thread_inited():
                     main_log.write('Ошибка: потоки не созданы, обнаружен форсированный запуск')
                     init_threads()
 
@@ -271,13 +281,20 @@ while True:
 
         elif check_request(server_input, ServerResponse.START_REQUEST):
             if is_ready():
-                init_threads();
+                if not thread_inited():
+                    init_threads();
                 main_log.write('Сервер готов к игре, отправка подтверждения')
                 send_to_server(ServerRequests.ACCEPT)
             else:
                 main_log.write('Сервер НЕ готов к игре, неизвестен внешний ip')
                 main_log.write('Запрос регистрации')
                 send_to_server_raw(REGISTER_REQUEST)
+        elif check_request(server_input, ServerResponse.GAME_ENDED):
+            game_started = False;
+            if attacker != None:
+                attacker.stop()
+            if defender != None:
+                defender.stop()
         elif check_request(server_input, ServerResponse.DEATH_REQUEST):
             main_log.write('Подтверждение активности')
             send_to_server(ServerRequests.CANCEL_DEATH)

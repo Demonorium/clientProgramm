@@ -7,7 +7,7 @@ import RawData
 
 class DefendThread(BasicNetworkThread):
     '''Поток, который умеет загадывать число и убивает программу при получении числа'''
-    def __init__(self, log, timeout, request_send, force_send, death_checker):
+    def __init__(self, log, timeout, request_send, force_send, death_checker, kill_everything):
         BasicNetworkThread.__init__(self, 
                                     name = "Защитник",
                                     log = log,
@@ -15,6 +15,8 @@ class DefendThread(BasicNetworkThread):
                                     request_send = request_send,
                                     force_send   = force_send)
         self.death_checker = death_checker
+        self.kill_everything = kill_everything
+
     def init_action(self):
         super().init_action()
         self.socket.bind(('', Protocol.INPUT_PORT))
@@ -67,6 +69,7 @@ class DefendThread(BasicNetworkThread):
                 self.wlog('Получено число:', number)
                 if number == self.death_number:         #Если число равно загаданому  - умираем
                     self.connection.send(RawData.DEATH_DATA)
+                    self.kill_everything()
                     exit(0)
                 else:
                     #Если число неверное, сообщаем с некоторым шансом направление поиска
