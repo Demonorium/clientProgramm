@@ -231,7 +231,7 @@ while main_loop:
         main_log.write('Получена датаграмма:', server_input)
         
         if not main_loop:
-            exit(0)
+            exit()
         #Помечаем, что мы получили данные от сервера
         if not data_received:
             data_received = True

@@ -75,7 +75,7 @@ class DefendThread(BasicNetworkThread):
                 if number == self.death_number:         #Если число равно загаданому  - умираем
                     self.connection.send(RawData.DEATH_DATA)
                     self.kill_everything()
-                    exit(0)
+                    exit()
                 else:
                     #Если число неверное, сообщаем с некоторым шансом направление поиска
                     if self.rnd.random() > Protocol.NO_CHANCE:

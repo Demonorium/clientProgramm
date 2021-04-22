@@ -55,7 +55,7 @@ class BasicNetworkThread(Thread):
             print(ex)
 
         self.force_send(Protocol.DEATH, 0, 0, 0, 0)
-        exit(0)
+        exit()
 
     def stop(self):
         self.stoped = True
