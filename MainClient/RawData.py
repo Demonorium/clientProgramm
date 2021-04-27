@@ -7,7 +7,7 @@ class Number:
         self.size = size;
     
   
-def append_number(data, number, size):
+def append_number(data: bytearray, number: int, size: int):
     for i in range(size):
         data.append(number & 255)
         number = number >> 8

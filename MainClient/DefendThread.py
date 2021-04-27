@@ -57,10 +57,14 @@ class DefendThread(BasicNetworkThread):
         self.enemy_ip = self.enemy_address[0]
         
         self.wlog('Принято подключение:', self.enemy_address)
-        while True:
+        while not self.stoped:
             #Слушаем данные от цели
             data = self.connection.recv(255) 
-            
+            if self.stoped:
+                self.connection.close()
+                break;
+
+
             if not data: #Если данные не получены
                 #Проверяем не помер ли враг
                 if self.death_checker(self.enemy_ip): 
