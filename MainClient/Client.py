@@ -25,7 +25,7 @@ MAIN_SERVER_LOG_FILE = "m-server.log"
 INPUT_LOG            = "input.log"
 OUTPUT_LOG           = "output.log"
 
-ENEMY_INPUT_TIMEOUT  = Protocol.SEND_DELAY*2 + 0.25
+ENEMY_INPUT_TIMEOUT  = Protocol.SEND_DELAY*2 + 1.25
 
 TABLE_UPDATE_DELAY = 2.0
 
@@ -147,12 +147,16 @@ def death_checker(ip):
 
 def kill_everything():
     '''Убивает все потоки'''
-    global attacker, defender, main_loop
+    global attacker, defender, main_loop, main_log, request_lock
+    request_lock.acquire()
+    main_log.write('ВНИМАНИЕ СМЕРТЬ')
     if (attacker != None) and not attacker.stoped:
         attacker.stop();
     if (defender != None) and not defender.stoped:
         defender.stop();
     main_loop = False
+    main_log.write('ВСЕ ПОТОКИ ОСТАНОВЛЕНЫ')
+    request_lock.release()
 
 def thread_inited():
     global attacker, defender
@@ -216,7 +220,7 @@ while main_loop:
             table_request_time += current_time - last_time
             #Если таблица игроков давно не обновлялась - обновляем
             if table_request_time > TABLE_UPDATE_DELAY:
-                main_log.write('Переодический запрос таблицы игроков')
+                main_log.write('Периодический запрос таблицы игроков')
                 send_to_server(ServerRequests.REQ_TABLE)
                 table_request_time = 0
 

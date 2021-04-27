@@ -41,7 +41,7 @@ class AttackThread(BasicNetworkThread):
             except socket.error as ex:
                 self.wlog(x)
             self.socket = None
-
+                
     def init_action(self):
         super().init_action()
         
@@ -88,6 +88,10 @@ class AttackThread(BasicNetworkThread):
             
             if RawData.check(data, RawData.DEATH_DATA):
                 self.socket.close()
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.settimeout(self.timeout)
+
+
                 ip = target_ip.split('.')
                 
                 for i in range(2):

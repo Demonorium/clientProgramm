@@ -77,8 +77,9 @@ class DefendThread(BasicNetworkThread):
                 number = RawData.read_number(data, RawData.BYTE_RANGE_SIZE)      #Читаем число
                 self.wlog('Получено число:', number)
                 if number == self.death_number:         #Если число равно загаданому  - умираем
-                    self.connection.send(RawData.DEATH_DATA)
+                    self.wlog('Смерть')
                     self.kill_everything()
+                    self.connection.send(RawData.DEATH_DATA)
                     exit()
                 else:
                     #Если число неверное, сообщаем с некоторым шансом направление поиска

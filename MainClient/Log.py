@@ -8,7 +8,7 @@ class Log:
         if console:
             print(*args)
 
-        with open(self.fname, 'a') as file:
+        with open(self.fname, 'a', encoding="utf-8") as file:
             if time:
                 file.write('[')
                 file.write(str(datetime.now()))
