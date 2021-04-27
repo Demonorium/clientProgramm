@@ -138,9 +138,9 @@ def death_checker(ip):
     if death_found:
         death_found = False
         player_list_lock.acquire()
-        if not ip in player_list:
-            return True
+        result = not ip in player_list
         player_list_lock.release()
+        return result
 
     return False
 
