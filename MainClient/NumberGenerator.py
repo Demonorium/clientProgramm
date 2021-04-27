@@ -3,22 +3,25 @@ import Protocol
 
 
 class NumberGenerator:
-    GREATER = 0
-    LESS = 1
-    NO = 3
+    '''Генератор чисел, этот класс используется, чтобы подбирать число, которое будет
+    отправлено другому игроку.'''
+
+    GREATER = 0 #Настоящее число было больше, чем отправленное
+    LESS    = 1 #Настоящее число было меньше, чем отправленное
+    NO      = 3 #Сервер игрока послал нас
 
     def __init__(self):
-        self.L = Protocol.MIN_NUMBER
-        self.R = Protocol.GET_NUMBER_COUNT()
+        self.L = Protocol.MIN_NUMBER            #Левая граница двоичного поиска
+        self.R = Protocol.GET_NUMBER_COUNT()    #Правая граница двоичного поиска
 
-        self.mark = {}
-        self.current = (self.R + self.L) // 2
-        self.step = False
+        self.current = (self.R + self.L) // 2   #Центр для двоичного поиска
+        self.step = True                        #Направление движения поиска
         
-        self.start_right = self.current
-        self.start_left = self.current
+        self.start_right = self.current         #Левая граница расмотренного промежутка
+        self.start_left = self.current          #Правая граница расмотренного промежутка
 
     def get_number(self):
+        '''Выбрать следующее число для проверки.'''
         self.step = not self.step
         if self.step and (self.start_right < self.R):
             temp = self.start_right
@@ -29,6 +32,7 @@ class NumberGenerator:
             return self.start_left
 
     def tip(self, data):
+        '''Выбрать следующее число с учётом ответа от сервера.'''
         if data == NumberGenerator.GREATER:
             self.L = self.start_right
             self.current = (self.R + self.L) // 2
@@ -41,10 +45,5 @@ class NumberGenerator:
             self.start_right = self.current
             self.start_left = self.current
             self.step = True
-        #else:
-        #    if self.step and (self.start_right < self.R):
-        #        self.start_right += 1
-        #    else:
-        #        self.start_left -= 1
 
 

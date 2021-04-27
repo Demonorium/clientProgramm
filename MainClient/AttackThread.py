@@ -61,51 +61,58 @@ class AttackThread(BasicNetworkThread):
             target_index = self.rnd.randrange(0, len(players))
             target_ip = players[target_index]
         else:
-            #self.stop()
             return;
         
+        #Пытаемся подключиться к выбранному игроку
         self.wlog('Попытка атаковать:', target_ip)
         self.socket.connect((target_ip, Protocol.INPUT_PORT))
         self.wlog('Начало атаки:', target_ip)
-
+        #Если подключение прошло
+        
+        #Проверяем, не подключались ли мы к нему раньше
+        #Если подключались - у нас есть ПОПЫТКА ЕГО УБИЙСТВА в словаре ip-generator
         generator = None
         if target_ip in self.generators:
+            #Если генератор найден
             generator = self.generators[target_ip]
 
         if generator == None:
+            #Если игрока видим впервые, создаём пустой генератор
             generator = NumberGenerator()
-            self.generators[target_ip] = generator
+            self.generators[target_ip] = generator #И говорим, что мы пытались убить игрока
 
-        while not self.stoped:
-            num = generator.get_number()
-            self.wlog('Отправка числа:', num)
+        while not self.stoped: #Цикл продолжается до первой ошибки или остановки потока (смерти) или смерти оппонента 
+            num = generator.get_number()        #Запрашиваем новое число у генератора
+            self.wlog('Отправка числа:', num)   
             
-            time.sleep(Protocol.SEND_DELAY)
-            self.socket.send(RawData.make_data(RawData.Number(num, RawData.BYTE_RANGE_SIZE)))
+            time.sleep(Protocol.SEND_DELAY) #Ждём указанную в протоколе задержку
+            self.socket.send(RawData.make_data(RawData.Number(num, RawData.BYTE_RANGE_SIZE)))   #Отправляем игроку число
             
-            data = self.socket.recv(255)
+            data = self.socket.recv(255)        #Ждём ответ от игрока
             self.wlog('Получен ответ:', data)
             
-            if RawData.check(data, RawData.DEATH_DATA):
-                self.socket.close()
-                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.settimeout(self.timeout)
-
-
-                ip = target_ip.split('.')
+            if RawData.check(data, RawData.DEATH_DATA): #Если игрок умер
+                self.socket.close() #Отключаемся
+                self.init_socket()  #Пересоздаём сокет
+                
+                ip = target_ip.split('.') #Преобразуем ip игрока в последовательность чисел
                 
                 for i in range(2):
+                    #Дважды просим главный сервер убить его
                     self.request_send(Protocol.ServerRequests.KILL, 
                                  int(ip[0]), int(ip[1]), int(ip[2]), int(ip[3]))
-                self.remove_player(target_ip)
-                break;
-            elif RawData.check(data, RawData.GREATER_DATA):
+                self.remove_player(target_ip) #Удаляем из НАШЕЙ таблицы
+                break; #Выходим из цикла
+
+            #Если игрок нам ответил, отправляем соотвествующую подсказку нашему гененатору
+            elif RawData.check(data, RawData.GREATER_DATA): 
                 generator.tip(NumberGenerator.GREATER)
             elif RawData.check(data, RawData.LESS_DATA):
                 generator.tip(NumberGenerator.LESS)
             elif RawData.check(data, RawData.NO_DATA):
                 generator.tip(NumberGenerator.NO)
             else:
+                #Игрок отправил дичь...
                 self.wlog('Неизвестный код ответа')
 
 
