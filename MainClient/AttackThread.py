@@ -33,12 +33,12 @@ class AttackThread(BasicNetworkThread):
     
     def timeout_action(self, exception):
         super().timeout_action(exception)
-        if self.socket != None: #Если случилcz разрыв связи  и у нас есть сокет
+        if self.socket != None: #Если случилcя разрыв связи  и у нас есть сокет
             self.wlog('Разрыв соединения: превышено время ожидания')
             try:
                 self.socket.close()
             except socket.error as ex: #Вырубаем его
-                self.wlog(x)
+                self.wlog(ex)
             self.socket = None  #Говорим, что сокета нет
                 
     def init_action(self):
