@@ -16,52 +16,51 @@ class AttackThread(BasicNetworkThread):
                                     timeout = timeout,
                                     request_send = request_send,
                                     force_send   = force_send)
-        self.generators = dict() 
-        self.request_table = request_table
-        self.remove_player = remove_player
-        self.link = False
+        self.generators = dict()  #Словарь генераторов, для каждого игрока будет заведён его уникальный генератор
+        self.request_table = request_table  #Метод, который запрашивает таблицу у главного потока
+        self.remove_player = remove_player  #Метод, который запрашивает удаление указанного игрока
 
 
     def error_action(self, exception):
         super().error_action(exception)
-        if self.socket != None:
+        if self.socket != None: #Если случилась ошибка и у нас есть сокет
             self.wlog('Разрыв соединения')
             try:
-                self.socket.close()
+                self.socket.close() #Вырубаем его
             except socket.error as ex:
                 self.wlog(ex)
-            self.socket = None
+            self.socket = None      #Говорим, что сокета нет
     
     def timeout_action(self, exception):
         super().timeout_action(exception)
-        if self.socket != None:
+        if self.socket != None: #Если случилcz разрыв связи  и у нас есть сокет
             self.wlog('Разрыв соединения: превышено время ожидания')
             try:
                 self.socket.close()
-            except socket.error as ex:
+            except socket.error as ex: #Вырубаем его
                 self.wlog(x)
-            self.socket = None
+            self.socket = None  #Говорим, что сокета нет
                 
     def init_action(self):
         super().init_action()
         
         #Работа в многопоточном режиме не даёт использовать math.random (риск ошибок)
+        #Создаём генератор случайных чисел, чтобы выбирать цели
         self.rnd = random.Random()
         self.rnd.seed(round(1000* time.time()))
 
     def loop_action(self):
-        if self.socket == None:
-            self.socket = socket.socket()
-            self.socket.settimeout(self.timeout)
+        if self.socket == None:         #Если сокета нет
+            self.init_socket()          #Создаём его
 
-        players = self.request_table()
+        players = self.request_table() #Запрашиваем таблицу
         target_index = 0
         target_ip = ''
-        if len(players) > 0:
-            target_index = self.rnd.randrange(0, len(players))
-            target_ip = players[target_index]
+        if len(players) > 0:    #Если таблица не пустая
+            target_index = self.rnd.randrange(0, len(players))  #Выбираем номер цели (случайный)
+            target_ip = players[target_index]                   #Запоминаем ip цели
         else:
-            return;
+            return; #Если мы последний игрок - уходим в цикл до обнаружения других
         
         #Пытаемся подключиться к выбранному игроку
         self.wlog('Попытка атаковать:', target_ip)
