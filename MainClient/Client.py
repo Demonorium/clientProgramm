@@ -55,7 +55,7 @@ data_received = False       #Если был получен хоть один о
 player_list = []            #Список игроков
 player_list_lock = Lock()   #Мьютекс списка игроков
 
-user_ip = None              #IP под которым главный сервер видит игрока
+self_ip = None              #IP под которым главный сервер видит игрока
 
 attacker = None             #Поток, атакующий игроков
 defender = None             #Поток, принимающий подключения
